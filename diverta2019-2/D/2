@@ -1,0 +1,83 @@
+#include <bits/stdc++.h>
+#define loop(n, i) for(int i=0;i<n;i++)
+#define loop1(n, i) for(int i=1;i<=n;i++)
+#define rloop(n, i) for(int i=n;i;i++)
+#define HERE cout << "HERE: " << __LINE__ << endl;
+#define INSP(v) cout << v << " at " << __LINE__ << endl;
+using namespace std;
+using ll = long long;
+template <class T>
+using V = vector<T>;
+ 
+int main() {
+    int n; cin >> n;
+    ll G[2][3];
+    loop (2, i) loop (3, j) cin >> G[i][j];
+ 
+    V<int> P[6];
+    P[0] = { 0, 1, 2 };
+    P[1] = { 0, 2, 1 };
+    P[2] = { 1, 0, 2 };
+    P[3] = { 1, 2, 0 };
+    P[4] = { 2, 0, 1 };
+    P[5] = { 2, 1, 0 };
+ 
+    ll ans = 0;
+    loop (6, pa) loop (6, pb) {
+        loop (4, ia) loop (4, ib) {
+            // なし, 1のみ, 12, 123
+            V<ll> g(3);
+            ll d = n;
+ 
+            // A
+            // 金貨化
+            if (ia >= 1) {
+                int pi = P[pa][0];
+                g[pi] = d / G[0][pi];
+                d -= g[pi] * G[0][pi];
+            }
+            if (ia >= 2) {
+                int pi = P[pa][1];
+                g[pi] = d / G[0][pi];
+                d -= g[pi] * G[0][pi];
+            }
+            if (ia >= 3) {
+                int pi = P[pa][2];
+                g[pi] = d / G[0][pi];
+                d -= g[pi] * G[0][pi];
+            }
+ 
+            // B
+            // 全てどんぐり化 -> 金貨化
+            loop (3, i) {
+                d += g[i] * G[1][i];
+                g[i] = 0;
+            }
+            if (ib >= 1) {
+                int pi = P[pb][0];
+                g[pi] = d / G[1][pi];
+                d -= g[pi] * G[1][pi];
+            }
+            if (ib >= 2) {
+                int pi = P[pb][1];
+                g[pi] = d / G[1][pi];
+                d -= g[pi] * G[1][pi];
+            }
+            if (ib >= 3) {
+                int pi = P[pb][2];
+                g[pi] = d / G[1][pi];
+                d -= g[pi] * G[1][pi];
+            }
+ 
+            // A
+            // 全てどんぐり化
+            loop (3, i) {
+                d += g[i] * G[1][i];
+            }
+ 
+            ans = max(ans, d);
+        }
+    }
+    cout << ans << endl;
+    return 0;
+}
