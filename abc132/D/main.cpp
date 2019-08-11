@@ -27,17 +27,11 @@ struct ModInt {
         v = (v * r.v) % M;
         return *this;
     }
-    ModInt& operator/=(const ModInt& r) {
-        auto s = r.pow(ModInt::M - 2);
-        v = (v * s.v) % M;
-        return *this;
-    }
     ModInt operator-() const { return (M - v % M); }
 
     friend ModInt operator+(ModInt l, const ModInt& r) { return l += r; }
     friend ModInt operator-(ModInt l, const ModInt& r) { return l -= r; }
     friend ModInt operator*(ModInt l, const ModInt& r) { return l *= r; }
-    friend ModInt operator/(ModInt l, const ModInt& r) { return l /= r; }
     friend bool operator==(ModInt l, const ModInt& r) { return l.v == r.v; }
     friend bool operator!=(ModInt l, const ModInt& r) { return !(l == r); }
 
@@ -57,47 +51,30 @@ ostream& operator<<(ostream& o, const ModInt& r) {
     return o;
 }
 
-ModInt fact[100000] = {};
-ModInt ifact[100000] = {};
-void calc_fact(int m) {
-    fact[0] = 1;
-    for (int i = 1; i <= m; i++) {
-        fact[i] = i * fact[i - 1];
-    }
-    for (int i = 0; i <= m; i++) {
-        ifact[i] = fact[i].pow(ModInt::M - 2).v;
-    }
+ModInt fact(ll n) {
+    if (n == 0) return 1;
+    if (n == 1) return 1;
+    return ModInt(n) * fact(n - 1);
 }
 
-ModInt comb(int n, int a) {
-    return fact[n] * ifact[a] * ifact[n - a];
+ModInt comb(ll n, ll a) {
+    return fact(n) * (fact(a) * fact(n - a)).pow(ModInt::M - 2);
 }
 
 int main() {
-    int p; cin >> p;
-    ModInt::M = p;
-    calc_fact(p + 10);
-    V<int> A(p);
-    loop (p, i) {
-        cin >> A[i];
-    }
+    ModInt::M = 1000000007;
+    ll n, k; cin >> n >> k;
+    ll m = n - k + 1;
 
-    V<ModInt> B(p);
-    loop (p, i) {
-        if (A[i] == 0) continue;
-        ModInt mi = 1;
-        
-        B[0] += 1;
-        for (int j = p - 1; j >= 0; j--) {
-            B[j] -= comb(p - 1, j) * mi;
-            mi *= -i;
-        };
+    loop1 (k, i) {
+        if (m < i) {
+            cout << 0 << endl;
+            continue;
+        }
+        ModInt ans = comb(m, i);
+        ans *= comb(k - 1, i - 1);
+        cout << ans << endl;
     }
-
-    loop (p - 1, i) {
-        cout << B[i] << " ";
-    }
-    cout << B[p - 1] << endl;
     return 0;
 }
 

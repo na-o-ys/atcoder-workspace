@@ -28,8 +28,7 @@ struct ModInt {
         return *this;
     }
     ModInt& operator/=(const ModInt& r) {
-        auto s = r.pow(ModInt::M - 2);
-        v = (v * s.v) % M;
+        v = (v * r.pow(M - 2).v) % M;
         return *this;
     }
     ModInt operator-() const { return (M - v % M); }
@@ -57,47 +56,58 @@ ostream& operator<<(ostream& o, const ModInt& r) {
     return o;
 }
 
-ModInt fact[100000] = {};
-ModInt ifact[100000] = {};
-void calc_fact(int m) {
-    fact[0] = 1;
-    for (int i = 1; i <= m; i++) {
-        fact[i] = i * fact[i - 1];
-    }
-    for (int i = 0; i <= m; i++) {
-        ifact[i] = fact[i].pow(ModInt::M - 2).v;
-    }
+ll gcd(ll a, ll b) {
+    if (b == 0) return a;
+    return gcd(b, a % b);
 }
 
-ModInt comb(int n, int a) {
-    return fact[n] * ifact[a] * ifact[n - a];
+ModInt fact(ll n) {
+    if (n == 0) return 1;
+    return ModInt(n) * fact(n - 1);
+}
+
+ModInt comb(ll n, ll a) {
+    return fact(n) * (fact(a) * fact(n - a)).pow(ModInt::M - 2);
+}
+
+ModInt prod(ll a, ll b) {
+    ModInt ans = 1;
+    loop (b, i) ans *= (a - i);
+    return ans;
+}
+
+V<int> G[100010];
+int k;
+int vis[100010] = {};
+
+ModInt dfs(int par, int node, int ancs, int sibs) {
+    ModInt ans = 1;
+    if (!vis[par]) {
+        if (k - ancs < sibs) return 0;
+        ans = prod(k - ancs, sibs);
+        vis[par] = 1;
+    }
+
+    int n_sibs = 0;
+    for (int c : G[node]) if (c != par) n_sibs++;
+    for (int c : G[node]) {
+        if (c == par) continue;
+        ans *= dfs(node, c, min(ancs + 1, 2), n_sibs);
+    }
+    return ans;
 }
 
 int main() {
-    int p; cin >> p;
-    ModInt::M = p;
-    calc_fact(p + 10);
-    V<int> A(p);
-    loop (p, i) {
-        cin >> A[i];
+    ModInt::M = 1000000007;
+    int n; cin >> n >> k;
+    loop (n - 1, i) {
+        int a, b; cin >> a >> b;
+        G[a].push_back(b);
+        G[b].push_back(a);
     }
 
-    V<ModInt> B(p);
-    loop (p, i) {
-        if (A[i] == 0) continue;
-        ModInt mi = 1;
-        
-        B[0] += 1;
-        for (int j = p - 1; j >= 0; j--) {
-            B[j] -= comb(p - 1, j) * mi;
-            mi *= -i;
-        };
-    }
-
-    loop (p - 1, i) {
-        cout << B[i] << " ";
-    }
-    cout << B[p - 1] << endl;
+    cout << dfs(0, 1, 0, 1) << endl;
     return 0;
 }
+
 

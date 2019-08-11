@@ -27,17 +27,11 @@ struct ModInt {
         v = (v * r.v) % M;
         return *this;
     }
-    ModInt& operator/=(const ModInt& r) {
-        auto s = r.pow(ModInt::M - 2);
-        v = (v * s.v) % M;
-        return *this;
-    }
     ModInt operator-() const { return (M - v % M); }
 
     friend ModInt operator+(ModInt l, const ModInt& r) { return l += r; }
     friend ModInt operator-(ModInt l, const ModInt& r) { return l -= r; }
     friend ModInt operator*(ModInt l, const ModInt& r) { return l *= r; }
-    friend ModInt operator/(ModInt l, const ModInt& r) { return l /= r; }
     friend bool operator==(ModInt l, const ModInt& r) { return l.v == r.v; }
     friend bool operator!=(ModInt l, const ModInt& r) { return !(l == r); }
 
@@ -57,47 +51,32 @@ ostream& operator<<(ostream& o, const ModInt& r) {
     return o;
 }
 
-ModInt fact[100000] = {};
-ModInt ifact[100000] = {};
-void calc_fact(int m) {
-    fact[0] = 1;
-    for (int i = 1; i <= m; i++) {
-        fact[i] = i * fact[i - 1];
-    }
-    for (int i = 0; i <= m; i++) {
-        ifact[i] = fact[i].pow(ModInt::M - 2).v;
-    }
-}
-
-ModInt comb(int n, int a) {
-    return fact[n] * ifact[a] * ifact[n - a];
-}
-
+const int SMAX = 32000;
+ModInt dp[110][SMAX][2] = {};
 int main() {
-    int p; cin >> p;
-    ModInt::M = p;
-    calc_fact(p + 10);
-    V<int> A(p);
-    loop (p, i) {
-        cin >> A[i];
+    ModInt::M = 1000000007;
+    ll n, k; cin >> n >> k;
+    loop1 (32000 - 1, j) {
+        dp[0][j][0] = 1;
+        dp[0][j][1] = 1;
     }
 
-    V<ModInt> B(p);
-    loop (p, i) {
-        if (A[i] == 0) continue;
-        ModInt mi = 1;
-        
-        B[0] += 1;
-        for (int j = p - 1; j >= 0; j--) {
-            B[j] -= comb(p - 1, j) * mi;
-            mi *= -i;
-        };
+    int sqn = 0;
+    while (sqn * sqn <= n) sqn++;
+
+    loop1 (k, i) {
+        loop1 (sqn, j) {
+            dp[i][j][0] = dp[i][j - 1][0] + dp[i - 1][j][1];
+        }
+
+        dp[i][sqn][1] = dp[i][n / sqn][0];
+        for (int j = sqn - 1; j >= 1; j--) {
+            ModInt cnt = n / j - n / (j + 1);
+            dp[i][j][1] = dp[i][j + 1][1] + dp[i - 1][j][0] * cnt;
+        }
     }
 
-    loop (p - 1, i) {
-        cout << B[i] << " ";
-    }
-    cout << B[p - 1] << endl;
+    cout << dp[k][1][1] << endl;
     return 0;
 }
 
